@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glasswing DEX — self-custodial copy client</title>
+<style>
+:root{--bg:#0b0f17;--card:#141b28;--ink:#e8edf5;--muted:#8b97ab;
+--good:#38d39f;--bad:#ff6b6b;--warn:#ffcf5c;--line:#243044;--accent:#5b8dff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:32px 20px 64px}
+a{color:var(--accent)}
+.hero{background:var(--card);border:1px solid var(--line);border-radius:16px;
+padding:28px 26px;margin-bottom:18px}
+.hero h1{margin:0 0 8px;font-size:26px;line-height:1.25}
+.hero .big{font-size:40px;font-weight:800;color:var(--good);letter-spacing:-1px}
+.hero .sub{color:var(--muted);margin-top:10px;font-size:15px}
+.hero .tag{display:inline-block;margin-top:12px;padding:3px 12px;border-radius:999px;
+background:rgba(91,141,255,.14);color:var(--accent);font-size:12px;font-weight:700;
+letter-spacing:.03em}
+.banner{background:rgba(255,207,92,.12);border:1px solid rgba(255,207,92,.5);
+color:var(--warn);border-radius:12px;padding:12px 16px;margin-bottom:14px;
+font-size:13.5px;line-height:1.5}
+.banner b{color:var(--warn)}
+.banner.hard{background:rgba(255,107,107,.10);border-color:rgba(255,107,107,.5);
+color:var(--bad)}
+.banner.hard b{color:var(--bad)}
+.nc-card{background:rgba(56,211,159,.08);border:1px solid rgba(56,211,159,.4);
+border-radius:12px;padding:14px 16px;margin-bottom:20px;color:var(--ink);font-size:13.5px}
+.nc-card b{color:var(--good)}
+h2{font-size:18px;margin:30px 0 12px;border-bottom:1px solid var(--line);
+padding-bottom:8px}
+table{width:100%;border-collapse:collapse;background:var(--card);
+border:1px solid var(--line);border-radius:12px;overflow:hidden}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);
+font-variant-numeric:tabular-nums;vertical-align:middle}
+th{background:#0f1622;color:var(--muted);font-weight:600;font-size:12px;
+text-transform:uppercase;letter-spacing:.04em}
+tr:last-child td{border-bottom:none}
+td.addr{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px}
+td.z{font-weight:700;color:var(--accent)}
+.badge{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11px;
+font-weight:600}
+.badge.clean{background:rgba(56,211,159,.14);color:var(--good)}
+.badge.clear{background:rgba(91,141,255,.14);color:var(--accent)}
+.badge.vault{background:rgba(139,151,171,.16);color:var(--muted)}
+.cav{color:var(--bad);font-size:11px}
+.btn{display:inline-block;border:1px solid var(--accent);background:transparent;
+color:var(--accent);border-radius:8px;padding:6px 14px;font-size:13px;
+font-weight:600;cursor:pointer;font-family:inherit}
+.btn:hover{background:rgba(91,141,255,.12)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.primary{background:var(--accent);color:#06101f;border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.08)}
+.steps{display:grid;gap:14px;margin-top:6px}
+.step{background:var(--card);border:1px solid var(--line);border-radius:12px;
+padding:16px 18px}
+.step .n{display:inline-flex;width:24px;height:24px;border-radius:999px;
+background:#0f1622;color:var(--muted);align-items:center;justify-content:center;
+font-size:12px;font-weight:700;margin-right:8px}
+.step h3{display:inline;font-size:15px;margin:0}
+.step .d{color:var(--muted);font-size:13px;margin:8px 0 12px}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;
+font-weight:600;background:#0f1622;color:var(--muted);border:1px solid var(--line)}
+.pill.ok{color:var(--good);border-color:rgba(56,211,159,.4)}
+.pill.err{color:var(--bad);border-color:rgba(255,107,107,.4)}
+.pill.warn{color:var(--warn);border-color:rgba(255,207,92,.4)}
+pre.out{background:#0f1622;border:1px solid var(--line);border-radius:8px;
+padding:10px 12px;font-size:12px;overflow:auto;color:var(--muted);
+white-space:pre-wrap;word-break:break-word;margin:10px 0 0;max-height:320px}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0}
+label.ck{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--ink);
+cursor:pointer}
+label.ck input{margin-top:3px}
+input.clip{width:110px;background:#0f1622;border:1px solid var(--line);color:var(--ink);
+border-radius:8px;padding:6px 10px;font-family:inherit;font-size:13px}
+.notice{color:var(--muted);font-size:12.5px;margin-top:8px}
+.notice.arm{color:var(--warn)}
+footer{margin-top:34px;color:var(--muted);font-size:12px;line-height:1.6;
+border-top:1px solid var(--line);padding-top:16px}
+footer .nc{color:var(--good);font-weight:600}
+.stamp{color:var(--muted);font-size:12px;margin-top:6px}
+.empty{color:var(--muted);padding:14px 0}
+</style>
+<!-- Crypto primitives (secp256k1, keccak, msgpack) loaded IN THE BROWSER from a
+     PINNED CDN. We do NOT hand-roll crypto. dex_app.js dynamically imports these
+     exact URLs; the modulepreload tags below just warm the fetch. These pins were
+     proven byte-for-byte equivalent to the hyperliquid-python-sdk signing scheme
+     (see product/hl_sign_equivalence.py). -->
+<link rel="modulepreload" href="https://esm.sh/@noble/curves@1.9.6/secp256k1" crossorigin>
+<link rel="modulepreload" href="https://esm.sh/js-sha3@0.9.3" crossorigin>
+<link rel="modulepreload" href="https://esm.sh/@msgpack/msgpack@3.0.0-beta2" crossorigin>
+<script type="module">
+  // Warm-load + expose a readiness promise. dex_app.js does the real import; this
+  // just surfaces load errors early and lets the page fetch the libs up front.
+  window.__glasswing_crypto_cdn = {
+    secp256k1: "https://esm.sh/@noble/curves@1.9.6/secp256k1",
+    js_sha3: "https://esm.sh/js-sha3@0.9.3",
+    msgpack: "https://esm.sh/@msgpack/msgpack@3.0.0-beta2"
+  };
+</script>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <h1><span class="big">Pure-DEX copy client</span></h1>
+    <div class="sub">Runs entirely in your browser. You keep custody of your
+    funds and your keys the whole time. Two signatures in your own wallet, an
+    ephemeral in-browser agent key that can trade but never withdraw, and a
+    client-side loop that mirrors only the
+    <b>8 of 40</b> vetted survivors
+    (universe: 292 scored wallets). No server, no backend.</div>
+    <div class="tag">static bundle &middot; IPFS-publishable &middot; revenue accrues on-chain</div>
+  </div>
+
+  <div class="banner hard" id="testnet-banner">⚠️ requires testnet signing test before live — the in-browser signer is IMPLEMENTED (real secp256k1 keygen + Hyperliquid L1 order signing: chainId 1337 phantom-agent, msgpack + keccak + EIP-712, crypto loaded from a pinned CDN). Current environment: <b id="env-banner">TESTNET</b>. MAINNET IS BLOCKED until a testnet order returns status ok (that sets a <span class="mono">glasswing.testnet_proven</span> flag); until then signing a mainnet order throws "TESTNET PROOF REQUIRED". No live signature has been validated against Hyperliquid yet.</div>
+
+  <div class="nc-card" id="pure-dex-notice"><b>Self-custodial.</b>
+    Pure DEX &amp; fully self-custodial: this page is a single static bundle (publishable to IPFS). There is NO server we run and NO backend in the loop — your browser talks only to Hyperliquid's public API. We never hold your funds or your keys.</div>
+
+  <h2>Vetted leaders <span style="color:var(--muted);font-weight:400;font-size:13px">
+  &mdash; SKILLED &amp; entity-CLEAR &amp; farm-CLEAN, ranked by skill z</span></h2>
+  <table><thead><tr><th>#</th><th>Wallet (copy target)</th><th>Skill z</th><th>Trips</th><th>Screens</th></tr></thead><tbody><tr><td>1</td><td class="addr">0xa1b6d8efbcb2fb750a84dbc05649fa4968034f04</td><td class="z">35.08</td><td>1388</td><td><span class="badge clean">CLEAN</span> <span class="badge clear">CLEAR</span> <span class="badge vault">vault</span></td></tr><tr><td>2</td><td class="addr">0x1ebc9d59fca0c4df29c453af993aa8c7c89b09bf</td><td class="z">10.43</td><td>338</td><td><span class="badge clean">CLEAN</span> <span class="badge clear">unknown</span></td></tr><tr><td>3</td><td class="addr">0xfced97d19603bc54145526eab3fe5b0f25f231ba</td><td class="z">4.68</td><td>495</td><td><span class="badge clean">CLEAN</span> <span class="badge clear">unknown</span></td></tr><tr><td>4</td><td class="addr">0x8825e6ed11c7f9c0874579c9f4bba192b9e81c8f</td><td class="z">3.64</td><td>99</td><td><span class="badge clean">CLEAN</span> <span class="badge clear">CLEAR</span> <span class="badge vault">vault</span></td></tr><tr><td>5</td><td class="addr">0x697bc3dd77539fa84156d0e1c95287ea5524fd6b</td><td class="z">3.11</td><td>212</td><td><span class="badge clean">CLEAN</span> <span class="badge clear">CLEAR</span> <span class="badge vault">vault</span></td></tr><tr><td>6</td><td class="addr">0x84b2b687df7c99702e887849f8d99bfb0fed12f2</td><td class="z">2.81</td><td>33</td><td><span class="badge clean">CLEAN</span> <span class="badge clear">unknown</span></td></tr><tr><td>7</td><td class="addr">0x5b6d236e39a4723a8f79db93cfd1af4d228f9c60</td><td class="z">2.67</td><td>58</td><td><span class="badge clean">CLEAN</span> <span class="badge clear">unknown</span></td></tr><tr><td>8</td><td class="addr">0xb9bd56e87b2c9085568f1ae17b18b5b0afbec4a2</td><td class="z">2.64</td><td>43</td><td><span class="badge clean">CLEAN</span> <span class="badge clear">unknown</span></td></tr></tbody></table>
+
+  <h2>Set up the client &mdash; all in your own browser</h2>
+  <div class="steps">
+
+    <div class="step" id="step-connect">
+      <span class="n">1</span><h3>Connect wallet</h3>
+      <span class="pill" id="wallet-pill">not connected</span>
+      <div class="d">Connect your Hyperliquid wallet (Rabby / MetaMask / any
+        <span class="mono">window.ethereum</span> provider). We only read your
+        address &mdash; no key ever leaves your wallet.</div>
+      <button class="btn primary" id="btn-connect">Connect wallet</button>
+      <pre class="out" id="connect-out" hidden></pre>
+    </div>
+
+    <div class="step" id="step-approve-fee">
+      <span class="n">2</span><h3>Approve 0.01% builder fee</h3>
+      <span class="pill" id="approve-fee-pill">awaiting connect</span>
+      <div class="d">Signature 1 of 2. Your wallet signs Hyperliquid's
+        <span class="mono">approveBuilderFee</span> so the client may charge up
+        to <b>0.01%</b> (1.0bp) per copied trade &mdash; never more,
+        and only on trades you copy. Builder:
+        <span class="mono">0xbe6c1b09662bbe52cc93279d103feb27985ddbc1</span>. This is the on-chain revenue
+        hook; it accrues automatically. Signed with
+        <span class="mono">eth_signTypedData_v4</span> in your wallet.</div>
+      <button class="btn primary" id="btn-approve-fee" disabled>Approve 0.01% fee</button>
+      <pre class="out" id="approve-fee-out" hidden></pre>
+    </div>
+
+    <div class="step" id="step-agent">
+      <span class="n">3</span><h3>Authorize an in-browser agent</h3>
+      <span class="pill" id="agent-pill">awaiting fee approval</span>
+      <div class="d">Signature 2 of 2 &mdash; the pure-DEX key primitive. This
+        page generates an <b>ephemeral agent keypair locally</b>, then your
+        wallet signs Hyperliquid's <span class="mono">approveAgent</span> to
+        authorize that agent address. A Hyperliquid agent can place/cancel
+        orders but <b>cannot withdraw or transfer</b> your funds.</div>
+      <div class="nc-card" id="agent-key-notice" style="margin:10px 0">
+        <b>Your agent key stays in this browser.</b> Your agent key stays in this browser. This page generates an ephemeral agent wallet locally and stores its private key ONLY in your browser (localStorage) — it is never transmitted anywhere. A Hyperliquid agent wallet can place and cancel orders but CANNOT withdraw or transfer your funds, so this in-browser key can trade but can never drain you.</div>
+      <button class="btn primary" id="btn-gen-agent" disabled>Generate agent key</button>
+      <button class="btn primary" id="btn-approve-agent" disabled>Authorize agent (sign)</button>
+      <pre class="out" id="agent-out" hidden></pre>
+    </div>
+
+    <div class="step" id="step-copy">
+      <span class="n">4</span><h3>Run the copy loop</h3>
+      <span class="pill" id="copy-pill">awaiting agent</span>
+      <div class="d">The loop polls each vetted leader's recent fills on the
+        <b>public</b> Hyperliquid info API
+        (<span class="mono">userFillsByTime</span>) and, when a vetted leader
+        opens, constructs a mirrored order signed by your in-browser agent with
+        our builder code <span class="mono">{b,f}</span> attached, sized to
+        your clip below.</div>
+      <div class="row">
+        <label class="mono" style="font-size:13px">Clip (USD)
+          <input class="clip" id="clip-usd" type="number" min="1" step="1" value="25"></label>
+      </div>
+      <div class="row">
+        <label class="ck"><input type="checkbox" id="live-toggle">
+          <span>Enable LIVE order placement. Leave UNCHECKED to run DRY (the
+          default): the loop logs the exact order it would place and places
+          nothing. When checked, the in-browser agent really signs and submits
+          the order to the CURRENT environment (testnet by default).</span></label>
+      </div>
+      <div class="row">
+        <label class="ck"><input type="checkbox" id="mainnet-toggle">
+          <span><b>Use MAINNET</b> (real funds). Blocked until a testnet order is
+          proven accepted &mdash; this box has no effect until
+          <span class="mono">glasswing.testnet_proven</span> is set. Leave
+          UNCHECKED to run on <b>testnet</b>. Signing a mainnet order without the
+          testnet proof throws <span class="mono">TESTNET PROOF REQUIRED</span>.
+          </span></label>
+      </div>
+      <div class="row">
+        <span class="pill" id="env-pill">env: testnet</span>
+        <span class="pill" id="proof-pill">testnet not yet proven</span>
+      </div>
+      <div class="row">
+        <button class="btn primary" id="btn-start-loop" disabled>Start copy loop (DRY)</button>
+        <button class="btn" id="btn-stop-loop" disabled>Stop</button>
+      </div>
+      <div class="notice arm" id="copy-arm-notice">DRY-RUN by default. Nothing is
+        placed unless you check the live box. Mainnet stays BLOCKED until a
+        testnet order returns status ok; until then a mainnet order signature
+        throws by design (no live signature has been validated yet).</div>
+      <pre class="out" id="copy-out" hidden></pre>
+    </div>
+
+  </div>
+
+  <footer>
+    <div class="nc">Pure DEX, self-custodial. No server, no backend, no key we ever hold. Your browser talks only to Hyperliquid&#x27;s public API.</div>
+    <div>Advisory. Skill = sign-randomization null vs luck. Entity veto = public transfer-graph linkage. Farm screen = arXiv:2601.08641 features (memecoin thresholds, HL-uncalibrated). Follower-realizable PnL is NOT yet proven (shadow-selector forward-pending); exit-alpha shown is advisory. Not financial advice.</div>
+    <div class="stamp">Generated at 2026-07-21T21:06:27Z &middot; static,
+    self-custodial surface, no live authority. In-browser order signing is
+    IMPLEMENTED (real secp256k1 + keccak + msgpack EIP-712 from a pinned CDN) but
+    UNVALIDATED against Hyperliquid: mainnet is blocked until a testnet order is
+    proven accepted.</div>
+  </footer>
+
+</div>
+
+<script id="dex-config" type="application/json">{"builder_address": "0xbe6c1b09662bbe52cc93279d103feb27985ddbc1", "fee_tenths_bp": 10, "fee_bps": 1.0, "max_fee_rate": "0.01%", "info_url": "https://api.hyperliquid.xyz/info", "exchange_url": "https://api.hyperliquid.xyz/exchange", "testnet_info_url": "https://api.hyperliquid-testnet.xyz/info", "testnet_exchange_url": "https://api.hyperliquid-testnet.xyz/exchange", "signature_chain_id": "0x66eee", "hyperliquid_chain": "Mainnet", "verifying_contract": "0x0000000000000000000000000000000000000000", "l1_phantom_chain_id": 1337, "agent_ls_key": "glasswing.dex.agentKey", "testnet_proven_ls_key": "glasswing.testnet_proven", "signer_scheme": "hl-l1-v2-wirecanon", "cdn_secp256k1": "https://esm.sh/@noble/curves@1.9.6/secp256k1", "cdn_js_sha3": "https://esm.sh/js-sha3@0.9.3", "cdn_msgpack": "https://esm.sh/@msgpack/msgpack@3.0.0-beta2", "source": "builder_code", "signer_class_proof": {"oid": 56716331690, "ts": "2026-07-19T23:36:11.385Z", "scheme": "hl-l1-v2-wirecanon"}, "vetted_addrs": ["0xa1b6d8efbcb2fb750a84dbc05649fa4968034f04", "0x1ebc9d59fca0c4df29c453af993aa8c7c89b09bf", "0xfced97d19603bc54145526eab3fe5b0f25f231ba", "0x8825e6ed11c7f9c0874579c9f4bba192b9e81c8f", "0x697bc3dd77539fa84156d0e1c95287ea5524fd6b", "0x84b2b687df7c99702e887849f8d99bfb0fed12f2", "0x5b6d236e39a4723a8f79db93cfd1af4d228f9c60", "0xb9bd56e87b2c9085568f1ae17b18b5b0afbec4a2"]}</script>
+<script src="dex_app.js"></script>
+</body>
+</html>
